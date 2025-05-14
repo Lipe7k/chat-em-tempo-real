@@ -79,7 +79,7 @@ const handleLogin = e => {
     login.style.display = "none"
     chat.style.display = "flex"
 
-    ws = new WebSocket("ws://chat-em-tempo-real-self.vercel.app")
+    ws = new WebSocket("https://chat-em-tempo-real-self.vercel.app")
     ws.onmessage = processMessage
 }
 
