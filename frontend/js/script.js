@@ -67,6 +67,8 @@ const processMessage = ({ data }) => {
     const message = userId == user.id ? createMessageSelfElement(content) : createMessageOtherElement(content, userName, userColor)
 
     chatMessages.appendChild(message)
+
+    message.scrollIntoView({ behavior: "smooth"})
 }
 
 const handleLogin = e => {
