@@ -123,7 +123,7 @@ body{
 .chat__messages > div {
     padding: 10px;
     width: 100%;
-    max-width: 250px;
+    max-width: 280px;
     font-size: 0.9rem;
     font-weight: 500;
     margin-bottom: 15px;
@@ -151,4 +151,11 @@ body{
     margin-bottom: 10px;
     font-weight: 700;
     color: cadetblue;
+}
+
+.chat__messages > .message-server{
+    max-width: 500px;
+    border-radius: 15px;
+    text-align: center;
+    align-self: center;
 }

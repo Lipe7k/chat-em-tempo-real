@@ -1,5 +1,4 @@
 
-
 const login = document.querySelector(".login")
 const loginForm = login.querySelector(".login__form")
 const loginInput = login.querySelector(".login__input")
@@ -61,29 +60,73 @@ const getRandomColor = () => {
     return colors[randomIndex]
 }
 
-const processMessage = ({ data }) => {
-    const { userId, userName, userColor, content} = JSON.parse(data)
 
-    const message = userId == user.id ? createMessageSelfElement(content) : createMessageOtherElement(content, userName, userColor)
+const sendSystemMessage = (content, isConnected = true) => {
+    const message = JSON.stringify({
+        content,
+        userId: "system",
+        userName: "System",
+        userColor: "#808080",
+        type: isConnected ? "connected" : "disconnected"    
+    })
+    ws.send(message)
+}
 
-    chatMessages.appendChild(message)
+const clientMessage = (content) => {
+    
+    const div = document.createElement("div");
+    div.innerHTML = content;
+    div.classList.add("message-server");
 
-    message.scrollIntoView({ behavior: "smooth"})
+    div.classList.add("message-server")
+    div.style.backgroundColor = content.includes("saiu") ? "#ff4c4c" : "#57b42c"
+
+
+    return div;
+}
+
+const processMessage = async ({ data }) => {
+    const { userId, userName, userColor, content, type } = JSON.parse(data);
+
+    let message;
+
+    if (type === "connected" || type === "disconnected")  {
+        message = clientMessage(content);
+    } else {
+        message = userId == user.id 
+            ? createMessageSelfElement(content) 
+            : createMessageOtherElement(content, userName, userColor);
+    }
+
+    chatMessages.appendChild(message);
+    message.scrollIntoView({ behavior: "smooth" });
 }
 
 const handleLogin = e => {
-    e.preventDefault()
+    e.preventDefault();
 
-    user.id = crypto.randomUUID()
-    user.name = loginInput.value
-    user.color = getRandomColor()
+    user.id = crypto.randomUUID();
+    user.name = loginInput.value;
+    user.color = getRandomColor();
 
-    login.style.display = "none"
-    chat.style.display = "flex"
+    login.style.display = "none";
+    chat.style.display = "flex";
 
-    ws = new WebSocket("wss://chat-em-tempo-real-dxs8.onrender.com");
-    ws.onmessage = processMessage
+    ws = new WebSocket("ws://localhost:8080");
+    ws.onmessage = processMessage;
+
+     ws.onopen = () => {
+        sendSystemMessage(`${user.name} entrou no chat!`)
+    }
+
+    ws.onclose = () => {
+        processMessage({ data: JSON.stringify({
+            content: `${user.name} saiu do chat!`,
+            type: "disconnected"
+        })})
+    }
 }
+
 
 const sendMessage = (event) => {
     event.preventDefault()
@@ -102,3 +145,9 @@ const sendMessage = (event) => {
 
 loginForm.addEventListener("submit", handleLogin)
 chatForm.addEventListener("submit", sendMessage)
+
+window.addEventListener("unload", () => {
+    if (ws) {
+        sendSystemMessage(`${user.name} saiu do chat!`, false)
+    }
+})
